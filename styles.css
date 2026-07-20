@@ -1,0 +1,1199 @@
+<style>
+  /* ==========================================================================
+     SISTEMA DE AGENDAMENTO - BARBEARIA
+     Design tokens: carvão / dourado envelhecido / osso
+     ========================================================================== */
+
+  :root {
+    /* Paleta - Verde Neon / Carvão (inspirada no painel NFS) */
+    --cor-fundo:        #0D1117;
+    --cor-fundo-claro:  #151B23;
+    --cor-superficie:   #1B222C;
+    --cor-osso:         #F5F7FA;
+    --cor-osso-suave:   #8B96A3;
+    --cor-dourado:      #1E5FFF;
+    --cor-dourado-claro:#5B8CFF;
+    --cor-navalha:      #E5484D;
+    --cor-oliva:        #1E5FFF;
+    --cor-azul-info:    #1E5FFF;
+
+    /* Cores de categoria (usadas nos cards de menu do admin) */
+    --cor-cat-roxo:   #9D7BFF;
+    --cor-cat-azul:   #4FA3FF;
+    --cor-cat-laranja:#FFA64F;
+    --cor-cat-rosa:   #FF6FA8;
+    --cor-cat-ciano:  #3FE0E0;
+
+    /* Tipografia */
+    --fonte-display: 'Bebas Neue', 'Oswald', sans-serif;
+    --fonte-corpo:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    /* Layout */
+    --raio-card: 10px;
+    --borda-fina: 1px solid rgba(30, 95, 255, 0.22);
+    --sombra-card: 0 4px 18px rgba(0, 0, 0, 0.35);
+    --largura-max: 480px;
+
+    /* Modo claro/escuro - variáveis sobrescritas em [data-tema="claro"] */
+    --bg-app: var(--cor-fundo);
+    --bg-superficie: var(--cor-superficie);
+    --bg-elevada: var(--cor-fundo-claro);
+    --texto-principal: var(--cor-osso);
+    --texto-suave: var(--cor-osso-suave);
+    --borda-cor: rgba(30, 95, 255, 0.22);
+  }
+
+  [data-tema="claro"] {
+    --bg-app: #F2F5FF;
+    --bg-superficie: #FFFFFF;
+    --bg-elevada: #E6ECFF;
+    --texto-principal: #121829;
+    --texto-suave: #5C6680;
+    --borda-cor: rgba(30, 95, 255, 0.2);
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-app);
+    color: var(--texto-principal);
+    font-family: var(--fonte-corpo);
+    width: 100%;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body.modal-aberto {
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  .modal-overlay {
+    overscroll-behavior: contain;
+  }
+
+  body {
+    min-height: 100vh;
+    line-height: 1.5;
+    font-size: 15px;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--fonte-display);
+    letter-spacing: 0.04em;
+    margin: 0;
+    color: var(--texto-principal);
+    text-transform: uppercase;
+  }
+
+  p { margin: 0; }
+
+  a { color: var(--cor-dourado); text-decoration: none; }
+
+  button {
+    font-family: var(--fonte-corpo);
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+  }
+
+  input, select, textarea {
+    font-family: var(--fonte-corpo);
+    font-size: 15px;
+    width: 100%;
+    background: var(--bg-elevada);
+    border: 1px solid var(--borda-cor);
+    color: var(--texto-principal);
+    padding: 12px 14px;
+    border-radius: var(--raio-card);
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--cor-dourado);
+  }
+
+  input::placeholder { color: var(--texto-suave); }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--cor-dourado-claro);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ==========================================================================
+     LAYOUT BASE / APP SHELL
+     ========================================================================== */
+
+  .app-shell {
+    max-width: var(--largura-max);
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg-app);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-admin-shell {
+    max-width: 100%;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg-app);
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width: 900px) {
+    .app-admin-shell {
+      flex-direction: row;
+    }
+  }
+
+  .container {
+    width: 100%;
+    padding: 0 18px;
+  }
+
+  .secao {
+    padding: 22px 18px;
+  }
+
+  .divisor {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--borda-cor), transparent);
+    margin: 4px 0;
+  }
+
+  /* ==========================================================================
+     HEADER / TOPO
+     ========================================================================== */
+
+  .topo {
+    background: var(--cor-fundo);
+    background-image:
+      repeating-linear-gradient(135deg, rgba(30,95,255,0.05) 0px, rgba(30,95,255,0.05) 1px, transparent 1px, transparent 14px);
+    border-bottom: 2px solid var(--cor-dourado);
+    padding: 28px 18px 22px;
+    position: relative;
+  }
+
+  .topo-marca {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .topo-logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--cor-dourado);
+    object-fit: cover;
+    background: var(--cor-superficie);
+    flex-shrink: 0;
+  }
+
+  .topo-logo-fallback {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--cor-dourado);
+    background: var(--cor-superficie);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cor-dourado);
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .topo-tag {
+    display: inline-block;
+    background: var(--bg-elevada);
+    color: var(--cor-dourado);
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-bottom: 4px;
+  }
+
+  .topo-nome {
+    font-size: 26px;
+    color: var(--cor-osso);
+    line-height: 1.1;
+  }
+
+  .topo-tagline {
+    font-size: 12px;
+    color: var(--cor-dourado);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .topo-toggle-tema {
+    position: absolute;
+    top: 24px;
+    right: 18px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--cor-superficie);
+    border: 1px solid var(--borda-cor);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cor-dourado);
+    font-size: 15px;
+  }
+
+  /* ==========================================================================
+     CARDS
+     ========================================================================== */
+
+  .card {
+    background: var(--bg-superficie);
+    border: var(--borda-fina);
+    border-radius: var(--raio-card);
+    box-shadow: var(--sombra-card);
+    padding: 16px;
+  }
+
+  .card + .card { margin-top: 12px; }
+
+  .card-servico {
+    background: var(--bg-superficie);
+    border: var(--borda-fina);
+    border-left: 3px solid var(--cor-dourado);
+    border-radius: var(--raio-card);
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .card-servico:active { transform: scale(0.98); }
+
+  .card-servico.selecionado {
+    border-color: var(--cor-dourado-claro);
+    background: var(--bg-elevada);
+  }
+
+  .card-servico-info h3 {
+    font-size: 16px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--fonte-corpo);
+    font-weight: 600;
+  }
+
+  .card-servico-desc {
+    font-size: 12.5px;
+    color: var(--texto-suave);
+    margin-top: 3px;
+  }
+
+  .card-servico-meta {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .card-servico-valor {
+    font-family: var(--fonte-display);
+    font-size: 19px;
+    color: var(--cor-dourado);
+  }
+
+  .card-servico-tempo {
+    font-size: 11px;
+    color: var(--texto-suave);
+    margin-top: 2px;
+  }
+
+  /* ==========================================================================
+     BOTÕES
+     ========================================================================== */
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 15px 20px;
+    border-radius: var(--raio-card);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.03em;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+  }
+
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-primario {
+    background: linear-gradient(135deg, var(--cor-dourado-claro), var(--cor-dourado));
+    color: var(--cor-fundo);
+  }
+
+  .btn-secundario {
+    background: transparent;
+    border: 1.5px solid var(--cor-dourado);
+    color: var(--cor-dourado);
+  }
+
+  .btn-perigo {
+    background: var(--cor-navalha);
+    color: var(--cor-osso);
+  }
+
+  .btn-sucesso {
+    background: var(--cor-oliva);
+    color: var(--cor-osso);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--texto-suave);
+    padding: 10px;
+  }
+
+  .btn-icone {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--bg-elevada);
+    border: 1px solid var(--borda-cor);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--texto-principal);
+    flex-shrink: 0;
+  }
+
+  /* ============== Ícones de redes sociais com cor de marca original ============== */
+  #link-whatsapp {
+    background: #25D366;
+    border-color: #25D366;
+    color: #FFFFFF;
+  }
+
+  #link-instagram {
+    background: radial-gradient(circle at 30% 110%, #FFDD55 0%, #FF543E 25%, #C837AB 50%, #7000FF 75%, #4B00C9 100%);
+    border: none;
+    color: #FFFFFF;
+  }
+
+  .btn-flutuante {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: calc(var(--largura-max) - 36px);
+    width: calc(100% - 36px);
+    z-index: 50;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  }
+
+  /* ==========================================================================
+     FORMULÁRIO / WIZARD DE AGENDAMENTO
+     ========================================================================== */
+
+  .campo {
+    margin-bottom: 16px;
+  }
+
+  .campo label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .barra-etapas {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 18px 0;
+  }
+
+  .etapa-ponto {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bg-elevada);
+    transition: background 0.25s ease;
+  }
+
+  .etapa-ponto.ativa { background: var(--cor-dourado); }
+  .etapa-ponto.concluida { background: var(--cor-oliva); }
+
+  .etapa-titulo {
+    font-size: 13px;
+    color: var(--cor-dourado);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 14px 0 4px;
+  }
+
+  .etapa-subtitulo {
+    font-family: var(--fonte-display);
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  /* Calendário inteligente */
+  .calendario-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+
+  .calendario-dia-semana {
+    text-align: center;
+    font-size: 10.5px;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    padding-bottom: 4px;
+  }
+
+  .calendario-dia {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--raio-card);
+    font-size: 14px;
+    background: var(--bg-elevada);
+    color: var(--texto-principal);
+    border: 1px solid transparent;
+    position: relative;
+  }
+
+  .calendario-dia.vazio { background: transparent; }
+  .calendario-dia.passado { color: var(--texto-suave); opacity: 0.35; }
+  .calendario-dia.disponivel { cursor: pointer; }
+  .calendario-dia.disponivel:active { transform: scale(0.92); }
+  .calendario-dia.selecionado {
+    background: var(--cor-dourado);
+    color: var(--cor-fundo);
+    font-weight: 700;
+  }
+  .calendario-dia.hoje::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--cor-dourado);
+  }
+
+  /* Grade de horários */
+  .horarios-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .horario-slot {
+    padding: 11px 4px;
+    text-align: center;
+    border-radius: var(--raio-card);
+    background: var(--bg-elevada);
+    border: 1px solid var(--borda-cor);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .horario-slot.selecionado {
+    background: var(--cor-dourado);
+    color: var(--cor-fundo);
+    border-color: var(--cor-dourado);
+  }
+
+  .horario-slot.ocupado {
+    opacity: 0.3;
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+
+  /* Indicador "navalha" - assinatura visual */
+  .navalha-indicador {
+    position: relative;
+    height: 3px;
+    background: var(--bg-elevada);
+    border-radius: 2px;
+    margin: 18px 0 8px;
+    overflow: visible;
+  }
+
+  .navalha-progresso {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--cor-dourado), var(--cor-dourado-claro));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .navalha-icone {
+    position: absolute;
+    top: -9px;
+    transform: translateX(-50%);
+    font-size: 15px;
+    color: var(--cor-dourado-claro);
+    transition: left 0.4s ease;
+  }
+
+  /* ==========================================================================
+     RESUMO / CONFIRMAÇÃO
+     ========================================================================== */
+
+  .resumo-linha {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--borda-cor);
+    font-size: 14px;
+  }
+
+  .resumo-linha:last-child { border-bottom: none; }
+  .resumo-label { color: var(--texto-suave); }
+  .resumo-valor { font-weight: 600; text-align: right; }
+
+  /* ==========================================================================
+     BADGES DE STATUS
+     ========================================================================== */
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .badge-agendado    { background: rgba(58,90,107,0.18);  color: #6FA8C0; }
+  .badge-confirmado   { background: rgba(30,95,255,0.18); color: var(--cor-dourado); }
+  .badge-concluido    { background: rgba(61,74,54,0.25);  color: #8FAA7C; }
+  .badge-cancelado    { background: rgba(122,46,46,0.2);  color: #C77B7B; }
+  .badge-naocompareceu{ background: rgba(122,46,46,0.1);  color: #9C8A7A; }
+
+  /* ==========================================================================
+     TOASTS / NOTIFICAÇÕES
+     ========================================================================== */
+
+  #toast-container {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    width: calc(100% - 32px);
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .toast {
+    background: var(--bg-superficie);
+    border: var(--borda-fina);
+    border-left: 4px solid var(--cor-dourado);
+    border-radius: var(--raio-card);
+    padding: 13px 16px;
+    color: var(--texto-principal);
+    font-size: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: toast-entrada 0.3s ease forwards;
+    pointer-events: all;
+  }
+
+  .toast.sucesso { border-left-color: var(--cor-oliva); }
+  .toast.erro { border-left-color: var(--cor-navalha); }
+  .toast.saindo { animation: toast-saida 0.25s ease forwards; }
+
+  @keyframes toast-entrada {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes toast-saida {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-12px); }
+  }
+
+  /* ==========================================================================
+     LOADING / SPINNER
+     ========================================================================== */
+
+  .spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid rgba(30,95,255,0.25);
+    border-top-color: var(--cor-dourado);
+    border-radius: 50%;
+    animation: girar 0.7s linear infinite;
+  }
+
+  @keyframes girar { to { transform: rotate(360deg); } }
+
+  .overlay-loading {
+    position: fixed;
+    inset: 0;
+    background: rgba(13,17,23,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    z-index: 998;
+  }
+
+  .overlay-loading .spinner {
+    width: 38px;
+    height: 38px;
+    border-width: 4px;
+  }
+
+  .overlay-loading-texto {
+    color: var(--cor-osso);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* ==========================================================================
+     ADMIN - SIDEBAR / NAVEGAÇÃO
+     ========================================================================== */
+
+  /* ============== Barra superior mobile (hambúrguer) ============== */
+  .admin-topbar-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--cor-fundo);
+    border-bottom: 1px solid var(--borda-cor);
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 150;
+  }
+
+  .admin-topbar-mobile-titulo {
+    font-family: var(--fonte-display);
+    font-size: 16px;
+    color: var(--cor-osso);
+    letter-spacing: 0.04em;
+  }
+
+  @media (min-width: 900px) {
+    .admin-topbar-mobile { display: none; }
+  }
+
+  /* ============== Overlay escuro atrás do drawer mobile ============== */
+  .admin-overlay-mobile {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 160;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .admin-overlay-mobile.aberto {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  @media (min-width: 900px) {
+    .admin-overlay-mobile { display: none; }
+  }
+
+  /* ============== Botão fechar (só aparece dentro do drawer mobile) ============== */
+  .admin-fechar-mobile {
+    display: flex;
+    margin: 0 0 10px auto;
+  }
+
+  @media (min-width: 900px) {
+    .admin-fechar-mobile { display: none; }
+  }
+
+  /* ============== Sidebar: drawer no mobile, fixa no desktop ============== */
+  .admin-sidebar {
+    background: var(--cor-fundo);
+    border-right: 1px solid var(--borda-cor);
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 260px;
+    max-width: 82vw;
+    min-height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 170;
+    transform: translateX(-100%);
+    transition: transform 0.28s ease;
+  }
+
+  .admin-sidebar.aberta {
+    transform: translateX(0);
+  }
+
+  @media (min-width: 900px) {
+    .admin-sidebar {
+      position: static;
+      transform: none;
+      width: 220px;
+      max-width: none;
+      flex-shrink: 0;
+    }
+  }
+
+  .admin-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    margin: 0 4px;
+    border-radius: var(--raio-card);
+    color: var(--texto-suave);
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 900px) {
+    .admin-nav-item { margin: 0 10px 4px; }
+  }
+
+  .admin-nav-item.ativo {
+    background: var(--bg-elevada);
+    color: var(--cor-dourado);
+  }
+
+  .admin-nav-item.ativo .admin-nav-icone-dourado,
+  .admin-nav-item.ativo .admin-nav-icone-azul,
+  .admin-nav-item.ativo .admin-nav-icone-laranja,
+  .admin-nav-item.ativo .admin-nav-icone-roxo,
+  .admin-nav-item.ativo .admin-nav-icone-rosa,
+  .admin-nav-item.ativo .admin-nav-icone-ciano {
+    background: rgba(30, 95, 255, 0.22);
+  }
+
+  .admin-marca {
+    display: none;
+    font-family: var(--fonte-display);
+    font-size: 20px;
+    color: var(--cor-osso);
+    padding: 0 14px 20px;
+    border-bottom: 1px solid var(--borda-cor);
+    margin-bottom: 14px;
+  }
+
+  @media (min-width: 900px) {
+    .admin-marca { display: block; }
+  }
+
+  /* ============== Cabeçalho do painel (estilo "NFS") ============== */
+  .admin-cabecalho-painel {
+    padding: 4px 14px 16px;
+    border-bottom: 1px solid var(--borda-cor);
+    margin-bottom: 14px;
+  }
+
+  .admin-cabecalho-tag {
+    display: inline-block;
+    background: var(--bg-elevada);
+    color: var(--cor-dourado);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+
+  .admin-cabecalho-titulo {
+    font-family: var(--fonte-display);
+    font-size: 24px;
+    color: var(--cor-osso);
+    line-height: 1.15;
+  }
+
+  .admin-cabecalho-sub {
+    font-size: 12.5px;
+    color: var(--texto-suave);
+    margin-top: 2px;
+  }
+
+  .admin-cabecalho-versao {
+    font-size: 11px;
+    color: var(--texto-suave);
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+
+  /* ============== Card de perfil ativo ============== */
+  .admin-perfil-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-elevada);
+    border: var(--borda-fina);
+    border-radius: var(--raio-card);
+    padding: 10px 12px;
+    margin: 0 14px 14px;
+  }
+
+  .admin-perfil-icone {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(30, 95, 255, 0.15);
+    color: var(--cor-dourado);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .admin-perfil-label {
+    font-size: 9.5px;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .admin-perfil-nome {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--texto-principal);
+  }
+
+  /* ============== Título de categoria (PRINCIPAL / CADASTROS) ============== */
+  .admin-categoria-titulo {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 6px 14px;
+    margin-top: 6px;
+  }
+
+  /* ============== Ícone colorido dentro do item de menu ============== */
+  .admin-nav-icone {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .admin-nav-icone-dourado  { background: rgba(47, 232, 136, 0.16); color: var(--cor-dourado); }
+  .admin-nav-icone-azul     { background: rgba(79, 163, 255, 0.16); color: var(--cor-cat-azul); }
+  .admin-nav-icone-laranja  { background: rgba(255, 166, 79, 0.16); color: var(--cor-cat-laranja); }
+  .admin-nav-icone-roxo     { background: rgba(157, 123, 255, 0.16); color: var(--cor-cat-roxo); }
+  .admin-nav-icone-rosa     { background: rgba(255, 111, 168, 0.16); color: var(--cor-cat-rosa); }
+  .admin-nav-icone-ciano    { background: rgba(63, 224, 224, 0.16); color: var(--cor-cat-ciano); }
+
+  .admin-main {
+    flex: 1;
+    min-width: 0;
+    padding: 16px 16px 90px;
+  }
+
+  @media (min-width: 900px) {
+    .admin-main { padding: 32px 36px; }
+  }
+
+  /* ==========================================================================
+     ADMIN - GRID DE KPIs / DASHBOARD
+     ========================================================================== */
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  @media (min-width: 700px) {
+    .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .kpi-card {
+    background: var(--bg-superficie);
+    border: var(--borda-fina);
+    border-radius: var(--raio-card);
+    padding: 16px 14px;
+  }
+
+  .kpi-card-clicavel {
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.12s ease;
+  }
+
+  .kpi-card-clicavel:hover {
+    background: var(--bg-elevada);
+  }
+
+  .kpi-card-clicavel:active {
+    transform: scale(0.97);
+  }
+
+  .kpi-label {
+    font-size: 11px;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .kpi-valor {
+    font-family: var(--fonte-display);
+    font-size: 26px;
+    color: var(--cor-dourado);
+    margin-top: 6px;
+  }
+
+  .grafico-card {
+    background: var(--bg-superficie);
+    border: var(--borda-fina);
+    border-radius: var(--raio-card);
+    padding: 16px;
+    margin-top: 14px;
+  }
+
+  .grafico-titulo {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--texto-suave);
+    margin-bottom: 10px;
+  }
+
+  /* ==========================================================================
+     TABELAS (ADMIN)
+     ========================================================================== */
+
+  .tabela-wrap {
+    overflow-x: auto;
+    border: var(--borda-fina);
+    border-radius: var(--raio-card);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    min-width: 560px;
+  }
+
+  thead th {
+    background: var(--bg-elevada);
+    color: var(--texto-suave);
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 7px 12px;
+    border-top: 1px solid var(--borda-cor);
+    color: var(--texto-principal);
+  }
+
+  .acoes-tabela {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  tbody tr:hover { background: var(--bg-elevada); }
+
+  /* ==========================================================================
+     MODAL
+     ========================================================================== */
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 200;
+  }
+
+  @media (min-width: 600px) {
+    .modal-overlay { align-items: center; }
+  }
+
+  .modal-box {
+    background: var(--bg-superficie);
+    border: var(--borda-fina);
+    border-radius: 14px 14px 0 0;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 22px 18px 36px;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @media (min-width: 600px) {
+    .modal-box { border-radius: var(--raio-card); max-height: 80vh; }
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  /* ==========================================================================
+     EMPTY STATES
+     ========================================================================== */
+
+  .estado-vazio {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--texto-suave);
+  }
+
+  .estado-vazio-icone {
+    font-size: 32px;
+    color: var(--borda-cor);
+    margin-bottom: 10px;
+  }
+
+  /* ==========================================================================
+     UTILITÁRIOS
+     ========================================================================== */
+
+  .flex { display: flex; min-width: 0; }
+  .flex-col { display: flex; flex-direction: column; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .gap-8 { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .w-full { width: 100%; }
+  .text-center { text-align: center; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-20 { margin-top: 20px; }
+  .hidden { display: none !important; }
+  .texto-suave { color: var(--texto-suave); }
+  .texto-dourado { color: var(--cor-dourado); }
+
+  /* ==========================================================================
+     CURSOR PONTEIRO EM ELEMENTOS CLICÁVEIS
+     ========================================================================== */
+
+  button,
+  a,
+  .admin-nav-item,
+  .admin-nav-item *,
+  .card-servico,
+  .card-servico *,
+  .calendario-dia.disponivel,
+  .horario-slot,
+  .btn-icone,
+  .btn,
+  [onclick],
+  [data-filtro-periodo],
+  [data-secao] {
+    cursor: pointer;
+  }
+
+  input, select, textarea {
+    cursor: text;
+  }
+
+  input[type="checkbox"],
+  input[type="time"],
+  input[type="date"] {
+    cursor: pointer;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.7;
+    cursor: pointer;
+  }
+
+  .calendario-dia.passado,
+  .horario-slot.ocupado {
+    cursor: not-allowed;
+  }
+</style>
