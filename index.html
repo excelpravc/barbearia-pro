@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#161412">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <title>Barbearia</title>
+</head>
+<body>
+  <div id="toast-container"></div>
+  <div id="overlay-loading-global" class="overlay-loading hidden">
+    <div class="spinner"></div>
+    <div class="overlay-loading-texto">Aguarde...</div>
+  </div>
+
+  <div class="app-shell">
+    <header class="topo">
+      <button class="topo-toggle-tema" id="toggle-tema" aria-label="Alternar tema claro/escuro">
+        <i class="fa-solid fa-moon" id="icone-tema"></i>
+      </button>
+      <div class="topo-marca">
+        <img id="topo-logo-img" class="topo-logo hidden" alt="Logo da barbearia">
+        <div id="topo-logo-fallback" class="topo-logo-fallback"><i class="fa-solid fa-scissors"></i></div>
+        <div>
+          <div class="topo-tag">BARBEARIA WN DO CORTE</div>
+          <h1 class="topo-nome" id="nome-barbearia-topo">Barbearia</h1>
+          <div class="topo-tagline">Agendamento Online</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="secao" style="padding-bottom:8px;">
+      <div class="card" style="background:var(--bg-superficie); text-align:center; padding:26px 18px;">
+        <i class="fa-solid fa-scissors" style="font-size:26px;color:var(--cor-dourado);"></i>
+        <h2 style="font-size:21px;margin-top:10px;">Reserve seu horário</h2>
+        <p class="texto-suave mt-8" style="font-size:13.5px;">Escolha o serviço, a data e o horário. Simples, rápido e sem complicação.</p>
+        <button class="btn btn-primario mt-16" onclick="abrirWizardAgendamento()">
+          <i class="fa-solid fa-calendar-check"></i> Agendar Agora
+        </button>
+        <button class="btn btn-ghost mt-8" onclick="abrirConsultaAgendamento()" style="width:100%;">
+          <i class="fa-regular fa-clock"></i> Consultar meu agendamento
+        </button>
+      </div>
+    </section>
+
+    <section class="secao" style="padding-top:8px;">
+      <h2 style="font-size:17px;margin-bottom:12px;">Nossos Serviços</h2>
+      <div id="lista-servicos-home">
+        <div class="text-center" style="padding:30px;"><div class="spinner" style="margin:0 auto;"></div></div>
+      </div>
+    </section>
+
+    <div style="flex:1;"></div>
+
+    <footer class="secao" style="border-top:var(--borda-fina);">
+      <div class="flex items-center gap-12" style="margin-bottom:10px;">
+        <i class="fa-solid fa-location-dot texto-dourado"></i>
+        <span class="texto-suave" id="endereco-barbearia" style="font-size:13.5px;">Endereço não configurado</span>
+      </div>
+      <div class="flex items-center gap-12" style="margin-bottom:14px;">
+        <i class="fa-regular fa-clock texto-dourado"></i>
+        <span class="texto-suave" id="horario-funcionamento" style="font-size:13.5px;">--:-- às --:--</span>
+      </div>
+      <div class="flex gap-12">
+        <a id="link-whatsapp" href="#" target="_blank" class="btn-icone" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        <a id="link-instagram" href="#" target="_blank" class="btn-icone hidden" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modais -->
+  <div class="modal-overlay hidden" id="modal-wizard">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 style="font-size:18px;">Novo Agendamento</h2>
+        <button class="btn-icone" onclick="fecharWizardAgendamento()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="barra-etapas" style="padding:0 0 4px;">
+        <div class="etapa-ponto" id="ponto-etapa-1"></div>
+        <div class="etapa-ponto" id="ponto-etapa-2"></div>
+        <div class="etapa-ponto" id="ponto-etapa-4"></div>
+        <div class="etapa-ponto" id="ponto-etapa-5"></div>
+      </div>
+      
+      <div id="wizard-etapa-1" class="mt-16">
+        <div class="etapa-titulo">Etapa 1 de 4</div>
+        <div class="etapa-subtitulo">Seus Dados</div>
+        <div class="campo">
+          <label for="wizard-nome">Nome completo</label>
+          <input type="text" id="wizard-nome" data-uppercase placeholder="EX: JOÃO DA SILVA" autocomplete="name">
+        </div>
+        <div class="campo">
+          <label for="wizard-telefone">Telefone / WhatsApp</label>
+          <input type="tel" id="wizard-telefone" placeholder="(00) 00000-0000" autocomplete="tel">
+        </div>
+        <button class="btn btn-primario mt-12" onclick="avancarEtapa1()">Continuar</button>
+      </div>
+
+      <div id="wizard-etapa-2" class="hidden mt-16">
+        <div class="etapa-titulo">Etapa 2 de 4</div>
+        <div class="etapa-subtitulo">Escolha o Serviço</div>
+        <div id="wizard-lista-servicos" class="flex-col gap-12"></div>
+        <button class="btn btn-ghost mt-12" onclick="irParaEtapa(1)"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+      </div>
+
+      <div id="wizard-etapa-4" class="hidden mt-16">
+        <div class="etapa-titulo">Etapa 3 de 4</div>
+        <div class="etapa-subtitulo">Data e Horário</div>
+        <div class="flex justify-between items-center mb-8">
+          <button class="btn-icone" onclick="mudarMesCalendario(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+          <strong id="calendario-titulo-mes" style="font-size:14px;"></strong>
+          <button class="btn-icone" onclick="mudarMesCalendario(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="calendario-grid" style="margin-bottom:4px;">
+          <div class="calendario-dia-semana">D</div><div class="calendario-dia-semana">S</div><div class="calendario-dia-semana">T</div>
+          <div class="calendario-dia-semana">Q</div><div class="calendario-dia-semana">Q</div><div class="calendario-dia-semana">S</div><div class="calendario-dia-semana">S</div>
+        </div>
+        <div class="calendario-grid" id="calendario-grid-dias"></div>
+        <div class="divisor" style="margin:18px 0 14px;"></div>
+        <div id="horarios-titulo-data" class="texto-dourado" style="font-size:13px;font-weight:700;text-transform:uppercase;margin-bottom:10px;"></div>
+        <div id="horarios-grid-container">
+          <div class="estado-vazio" style="padding:20px;">Selecione uma data para ver os horários.</div>
+        </div>
+        <div class="flex-col gap-12 mt-16">
+          <button class="btn btn-primario" onclick="avancarParaResumo()">Continuar</button>
+          <button class="btn btn-ghost" onclick="irParaEtapa(2)"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+        </div>
+      </div>
+
+      <div id="wizard-etapa-5" class="hidden mt-16">
+        <div class="etapa-titulo">Etapa 4 de 4</div>
+        <div class="etapa-subtitulo">Confirme seu Agendamento</div>
+        <div class="card" id="resumo-agendamento-container"></div>
+        <div class="flex-col gap-12 mt-16">
+          <button class="btn btn-primario" id="btn-confirmar-agendamento" onclick="confirmarAgendamentoFinal()">Confirmar Agendamento</button>
+          <button class="btn btn-ghost" onclick="irParaEtapa(4)"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-confirmacao-final">
+    <div class="modal-box text-center">
+      <i class="fa-solid fa-circle-check" style="font-size:42px;color:var(--cor-oliva);"></i>
+      <h2 style="font-size:19px;margin-top:14px;">Agendamento Confirmado!</h2>
+      <p class="texto-suave mt-12" id="confirmacao-final-texto" style="font-size:14px;line-height:1.6;"></p>
+      <button class="btn btn-primario mt-20" onclick="fecharConfirmacaoFinal()">Concluir</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-consulta">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 style="font-size:18px;">Meus Agendamentos</h2>
+        <button class="btn-icone" onclick="fecharConsultaAgendamento()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="campo">
+        <label for="consulta-telefone">Telefone usado no agendamento</label>
+        <input type="tel" id="consulta-telefone" placeholder="(00) 00000-0000">
+      </div>
+      <button class="btn btn-primario" onclick="buscarMeusAgendamentos()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+      <div id="consulta-resultado" class="mt-16"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-status-cliente">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 style="font-size:18px;">Atualizar Agendamento</h2>
+        <button class="btn-icone" onclick="fecharModalStatusCliente()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input type="hidden" id="status-cliente-id">
+      <input type="hidden" id="status-cliente-servico-id">
+      <div class="campo">
+        <label>Novo status</label>
+        <select id="form-status-cliente">
+          <option value="Agendado">Agendado</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+      </div>
+      <div class="divisor mt-12" style="margin-bottom:14px;"></div>
+      <div class="etapa-subtitulo" style="font-size:16px;margin-bottom:10px;">Data e Horário</div>
+      <div class="flex justify-between items-center mb-8">
+        <button class="btn-icone" onclick="mudarMesCalendarioCliente(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <strong id="calendario-cliente-titulo-mes" style="font-size:14px;"></strong>
+        <button class="btn-icone" onclick="mudarMesCalendarioCliente(1)"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <div class="calendario-grid" style="margin-bottom:4px;">
+        <div class="calendario-dia-semana">D</div><div class="calendario-dia-semana">S</div><div class="calendario-dia-semana">T</div>
+        <div class="calendario-dia-semana">Q</div><div class="calendario-dia-semana">Q</div><div class="calendario-dia-semana">S</div><div class="calendario-dia-semana">S</div>
+      </div>
+      <div class="calendario-grid" id="calendario-cliente-grid-dias"></div>
+      <div class="divisor" style="margin:18px 0 14px;"></div>
+      <div id="horarios-cliente-titulo-data" class="texto-dourado" style="font-size:13px;font-weight:700;text-transform:uppercase;margin-bottom:10px;"></div>
+      <div id="horarios-cliente-grid-container">
+        <div class="estado-vazio" style="padding:20px;">Selecione uma data para ver os horários.</div>
+      </div>
+      <button class="btn btn-primario mt-16" onclick="confirmarStatusCliente()"><i class="fa-solid fa-check"></i> Salvar Alterações</button>
+    </div>
+  </div>
+
+  <script type="module" src="client.js"></script>
+</body>
+</html>
