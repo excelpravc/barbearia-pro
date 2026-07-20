@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#161412">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <title>Painel Admin</title>
+</head>
+<body data-tema="escuro">
+  <div id="toast-container"></div>
+  <div id="overlay-loading-global" class="overlay-loading hidden">
+    <div class="spinner"></div>
+    <div class="overlay-loading-texto">Aguarde...</div>
+  </div>
+
+  <div class="app-admin-shell">
+    <div class="admin-topbar-mobile">
+      <span class="admin-topbar-mobile-titulo">Painel Admin</span>
+      <button class="btn-icone" onclick="abrirMenuMobile()"><i class="fa-solid fa-bars"></i></button>
+    </div>
+    <div class="admin-overlay-mobile" id="admin-overlay-mobile" onclick="fecharMenuMobile()"></div>
+
+    <nav class="admin-sidebar" id="admin-sidebar">
+      <button class="btn-icone admin-fechar-mobile" onclick="fecharMenuMobile()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="admin-cabecalho-painel">
+        <div class="admin-cabecalho-tag">BARBEARIA WN DO CORTE</div>
+        <div class="admin-cabecalho-titulo">Painel <span class="texto-dourado">Admin</span></div>
+        <div class="admin-cabecalho-sub">Painel de Gestão</div>
+      </div>
+      <div class="admin-perfil-card">
+        <div class="admin-perfil-icone"><i class="fa-solid fa-scissors"></i></div>
+        <div class="admin-perfil-info">
+          <div class="admin-perfil-label">PERFIL ATIVO</div>
+          <div class="admin-perfil-nome">Administrador</div>
+        </div>
+      </div>
+      <div class="admin-categoria-titulo">Principal</div>
+      <div class="admin-nav-item ativo" data-secao="dashboard" onclick="trocarSecaoAdmin('dashboard'); fecharMenuMobile();">
+        <span class="admin-nav-icone admin-nav-icone-dourado"><i class="fa-solid fa-gauge"></i></span> Dashboard
+      </div>
+      <div class="admin-nav-item" data-secao="agenda" onclick="trocarSecaoAdmin('agenda'); fecharMenuMobile();">
+        <span class="admin-nav-icone admin-nav-icone-azul"><i class="fa-solid fa-calendar-days"></i></span> Agenda
+      </div>
+      <div class="admin-nav-item" data-secao="financeiro" onclick="trocarSecaoAdmin('financeiro'); fecharMenuMobile();">
+        <span class="admin-nav-icone admin-nav-icone-laranja"><i class="fa-solid fa-sack-dollar"></i></span> Financeiro
+      </div>
+      <div class="admin-categoria-titulo">Cadastros</div>
+      <div class="admin-nav-item" data-secao="servicos" onclick="trocarSecaoAdmin('servicos'); fecharMenuMobile();">
+        <span class="admin-nav-icone admin-nav-icone-roxo"><i class="fa-solid fa-list-check"></i></span> Serviços
+      </div>
+      <div class="admin-nav-item" data-secao="clientes" onclick="trocarSecaoAdmin('clientes'); fecharMenuMobile();">
+        <span class="admin-nav-icone admin-nav-icone-rosa"><i class="fa-solid fa-users"></i></span> Clientes
+      </div>
+      <div class="admin-nav-item" data-secao="configuracoes" onclick="trocarSecaoAdmin('configuracoes'); fecharMenuMobile();">
+        <span class="admin-nav-icone admin-nav-icone-ciano"><i class="fa-solid fa-gear"></i></span> Configurações
+      </div>
+      <a href="index.html" target="_blank" class="admin-nav-item">
+        <span class="admin-nav-icone admin-nav-icone-dourado"><i class="fa-solid fa-arrow-up-right-from-square"></i></span> Ver site público
+      </a>
+    </nav>
+
+    <main class="admin-main">
+      <section class="admin-secao ativa" id="secao-dashboard">
+        <div class="flex justify-between items-center mb-12">
+          <h1 style="font-size:22px;">Dashboard</h1>
+          <button class="btn-icone" onclick="carregarDashboard()"><i class="fa-solid fa-rotate"></i></button>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-label">Hoje</div><div class="kpi-valor" id="kpi-agendamentos-hoje">--</div></div>
+          <div class="kpi-card"><div class="kpi-label">Esta Semana</div><div class="kpi-valor" id="kpi-agendamentos-semana">--</div></div>
+          <div class="kpi-card"><div class="kpi-label">Este Mês</div><div class="kpi-valor" id="kpi-agendamentos-mes">--</div></div>
+          <div class="kpi-card"><div class="kpi-label">Clientes</div><div class="kpi-valor" id="kpi-total-clientes">--</div></div>
+          <div class="kpi-card"><div class="kpi-label">Receita Hoje</div><div class="kpi-valor" id="kpi-receita-dia" style="font-size:20px;">R$ --</div></div>
+          <div class="kpi-card"><div class="kpi-label">Receita do Mês</div><div class="kpi-valor" id="kpi-receita-mes" style="font-size:20px;">R$ --</div></div>
+        </div>
+        <div class="grafico-card">
+          <div class="grafico-titulo">Agendamentos - Últimos 14 dias</div>
+          <div style="width:100%;height:220px;position:relative;"><canvas id="grafico-agendamentos-dias"></canvas></div>
+        </div>
+      </section>
+
+      <section class="admin-secao" id="secao-agenda">
+        <div class="flex justify-between items-center mb-12" style="flex-wrap:wrap;gap:10px;">
+          <h1 style="font-size:22px;">Agenda</h1>
+          <div class="flex gap-8">
+            <button class="btn btn-secundario" style="width:auto;padding:9px 14px;font-size:13px;" data-filtro-periodo="dia" onclick="filtrarAgendaPeriodo('dia')">Dia</button>
+            <button class="btn btn-secundario" style="width:auto;padding:9px 14px;font-size:13px;" data-filtro-periodo="semana" onclick="filtrarAgendaPeriodo('semana')">Semana</button>
+            <button class="btn btn-secundario" style="width:auto;padding:9px 14px;font-size:13px;" data-filtro-periodo="mes" onclick="filtrarAgendaPeriodo('mes')">Mês</button>
+          </div>
+        </div>
+        <div class="flex gap-8 mb-12" style="flex-wrap:wrap;">
+          <input type="text" id="busca-agenda" placeholder="Buscar por nome, telefone ou serviço..." style="flex:1;min-width:200px;" oninput="renderizarTabelaAgendamentos()">
+          <select id="filtro-status-agenda" style="flex:0 0 160px;" onchange="renderizarTabelaAgendamentos()">
+            <option value="">Todos status</option>
+            <option value="Agendado">Agendado</option>
+            <option value="Confirmado">Confirmado</option>
+            <option value="Concluído">Concluído</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
+        </div>
+        <div class="tabela-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>Serviço</th><th>Data</th><th>Horário</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="tabela-agendamentos-body"><tr><td colspan="7" class="text-center" style="padding:30px;">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-secao" id="secao-servicos">
+        <div class="flex justify-between items-center mb-12">
+          <h1 style="font-size:22px;">Serviços</h1>
+          <button class="btn btn-primario" style="width:auto;padding:11px 16px;" onclick="abrirModalServico()"><i class="fa-solid fa-plus"></i> Novo</button>
+        </div>
+        <div class="tabela-wrap">
+          <table>
+            <thead><tr><th>Serviço</th><th>Valor</th><th>Tempo</th><th>Ativo</th><th>Ações</th></tr></thead>
+            <tbody id="tabela-servicos-body"><tr><td colspan="5" class="text-center" style="padding:30px;">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-secao" id="secao-clientes">
+        <div class="flex justify-between items-center mb-12">
+          <h1 style="font-size:22px;">Clientes</h1>
+        </div>
+        <input type="text" id="busca-clientes" placeholder="Buscar por nome ou telefone..." class="mb-12" oninput="renderizarTabelaClientes()">
+        <div class="tabela-wrap">
+          <table>
+            <thead><tr><th>Nome</th><th>Telefone</th><th>Cadastro</th><th>Último Atendimento</th></tr></thead>
+            <tbody id="tabela-clientes-body"><tr><td colspan="4" class="text-center" style="padding:30px;">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-secao" id="secao-financeiro">
+        <div class="flex justify-between items-center mb-12" style="flex-wrap:wrap;gap:10px;">
+          <h1 style="font-size:22px;">Financeiro</h1>
+          <button class="btn btn-primario" style="width:auto;padding:11px 16px;" onclick="abrirModalLancamento()"><i class="fa-solid fa-plus"></i> Lançamento</button>
+        </div>
+        <div class="kpi-card mb-12" style="border-left:3px solid var(--cor-dourado);">
+          <div class="kpi-label"><i class="fa-solid fa-calendar-month" style="color:var(--cor-dourado);margin-right:6px;"></i>Receita Total do Mês</div>
+          <div class="kpi-valor" id="fin-total-mes" style="font-size:22px;">R$ --</div>
+        </div>
+        <div class="card mb-12" style="padding:14px 16px;">
+          <div class="flex gap-8" style="flex-wrap:wrap;margin-bottom:10px;">
+            <button class="btn btn-primario" style="width:auto;padding:7px 12px;font-size:12.5px;" onclick="filtrarFinanceiroPeriodo('mes-atual')">Mês Atual</button>
+            <button class="btn btn-secundario" style="width:auto;padding:7px 12px;font-size:12.5px;" onclick="filtrarFinanceiroPeriodo('mes-anterior')">Mês Anterior</button>
+            <button class="btn btn-secundario" style="width:auto;padding:7px 12px;font-size:12.5px;" onclick="filtrarFinanceiroPeriodo('hoje')">Hoje</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr auto;gap:6px;align-items:center;">
+            <input type="date" id="fin-data-inicio" style="padding:9px 8px;font-size:13px;min-width:0;">
+            <span class="texto-suave" style="font-size:12px;white-space:nowrap;padding:0 2px;">até</span>
+            <input type="date" id="fin-data-fim" style="padding:9px 8px;font-size:13px;min-width:0;">
+            <button class="btn btn-secundario" style="width:40px;height:40px;padding:0;flex-shrink:0;" onclick="filtrarFinanceiroPeriodo('personalizado')"><i class="fa-solid fa-magnifying-glass" style="font-size:13px;"></i></button>
+          </div>
+          <div class="flex justify-between items-center" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--borda-cor);">
+            <span class="texto-suave" style="font-size:13px;" id="fin-periodo-label">Mês atual</span>
+            <span style="font-size:15px;font-weight:700;color:var(--cor-dourado);" id="fin-total-periodo">R$ 0,00</span>
+          </div>
+        </div>
+        <div class="tabela-wrap">
+          <table>
+            <thead><tr><th>Data</th><th>Cliente</th><th>Serviço</th><th>Valor</th><th>Pagamento</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="tabela-financeiro-body"><tr><td colspan="7" class="text-center" style="padding:30px;">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-secao" id="secao-configuracoes">
+        <h1 style="font-size:22px;" class="mb-12">Configurações</h1>
+        <div class="card">
+          <div class="campo"><label>Nome da Barbearia</label><input type="text" id="cfg-NomeBarbearia"></div>
+          <div class="campo"><label>URL do Logo</label><input type="text" id="cfg-Logo" placeholder="https://..."></div>
+          <div class="campo"><label>Endereço</label><input type="text" id="cfg-Endereco"></div>
+          <div class="campo"><label>WhatsApp (somente números)</label><input type="text" id="cfg-WhatsApp" placeholder="5511999999999"></div>
+          <div class="campo"><label>Instagram</label><input type="text" id="cfg-Instagram"></div>
+          <div class="campo"><label>Tempo padrão de atendimento (min)</label><input type="number" id="cfg-TempoPadraoAtendimento" min="5" step="5"></div>
+          <div class="divisor mt-12" style="margin-bottom:14px;"></div>
+          <h3 style="font-size:14px;text-transform:none;font-family:var(--fonte-corpo);margin-bottom:12px;"><i class="fa-solid fa-calendar-week texto-dourado"></i> Horários por Dia da Semana</h3>
+          <div id="grade-horarios-semana"></div>
+          <button class="btn btn-primario mt-12" onclick="salvarConfiguracoesAdmin()"><i class="fa-solid fa-floppy-disk"></i> Salvar Configurações</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modais Admin -->
+  <div class="modal-overlay hidden" id="modal-servico">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 style="font-size:18px;" id="titulo-modal-servico">Novo Serviço</h2>
+        <button class="btn-icone" onclick="fecharModalServico()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input type="hidden" id="servico-id-edicao">
+      <div class="campo"><label>Nome do serviço</label><input type="text" id="form-servico-nome"></div>
+      <div class="campo"><label>Descrição</label><input type="text" id="form-servico-descricao" placeholder="Opcional"></div>
+      <div class="flex gap-12">
+        <div class="campo" style="flex:1;"><label>Valor (R$)</label><input type="number" id="form-servico-valor" min="0" step="0.5"></div>
+        <div class="campo" style="flex:1;"><label>Tempo (min)</label><input type="number" id="form-servico-tempo" min="5" step="5"></div>
+      </div>
+      <div class="campo">
+        <label class="flex items-center gap-8" style="text-transform:none;font-size:14px;">
+          <input type="checkbox" id="form-servico-ativo" style="width:auto;" checked> Serviço ativo
+        </label>
+      </div>
+      <button class="btn btn-primario" onclick="salvarServicoAdmin()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-status-agendamento">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 style="font-size:18px;">Atualizar Status</h2>
+        <button class="btn-icone" onclick="fecharModalStatus()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input type="hidden" id="status-agendamento-id">
+      <div class="campo">
+        <label>Novo status</label>
+        <select id="form-novo-status">
+          <option value="Agendado">Agendado</option>
+          <option value="Confirmado">Confirmado</option>
+          <option value="Concluído">Concluído</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+      </div>
+      <div class="campo" id="campo-forma-pagamento-status" style="display:none;">
+        <label>Forma de pagamento</label>
+        <select id="form-pagamento-status">
+          <option value="Pix">Pix</option><option value="Dinheiro">Dinheiro</option><option value="Débito">Débito</option><option value="Crédito">Crédito</option>
+        </select>
+      </div>
+      <button class="btn btn-primario" id="btn-confirmar-status" onclick="confirmarAtualizacaoStatus()"><i class="fa-solid fa-check"></i> Atualizar</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-lancamento">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 style="font-size:18px;">Novo Lançamento</h2>
+        <button class="btn-icone" onclick="fecharModalLancamento()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="campo"><label>Data</label><input type="date" id="form-lanc-data"></div>
+      <div class="campo"><label>Cliente</label><input type="text" id="form-lanc-cliente"></div>
+      <div class="campo"><label>Serviço</label><select id="form-lanc-servico" onchange="preencherValorServico()"><option value="">Selecione...</option></select></div>
+      <div class="flex gap-12">
+        <div class="campo" style="flex:1;"><label>Valor (R$)</label><input type="number" id="form-lanc-valor" min="0" step="0.5"></div>
+        <div class="campo" style="flex:1;"><label>Forma de Pagamento</label>
+          <select id="form-lanc-pagamento"><option value="Pix">Pix</option><option value="Dinheiro">Dinheiro</option><option value="Débito">Débito</option><option value="Crédito">Crédito</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primario" id="btn-salvar-lancamento" onclick="salvarLancamentoAdmin()"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-confirmacao">
+    <div class="modal-box text-center">
+      <i class="fa-solid fa-triangle-exclamation" style="font-size:34px;color:#FFC857;"></i>
+      <h2 style="font-size:18px;margin-top:14px;" id="confirmacao-titulo">Confirmar ação</h2>
+      <p class="texto-suave mt-8" id="confirmacao-mensagem" style="font-size:13.5px;">Esta ação não pode ser desfeita.</p>
+      <div class="flex gap-12 mt-20">
+        <button class="btn btn-secundario" onclick="cancelarConfirmacao()">Cancelar</button>
+        <button class="btn btn-perigo" id="btn-confirmar-acao" onclick="confirmarAcaoPendente()">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
